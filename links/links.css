@@ -1,0 +1,26 @@
+.links {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;    
+}
+
+.links .link {
+    width: 16px;
+    height: 16px;
+}
+
+.links .link.github {
+    display: inline-block;
+    background-image: url("github.png");
+    background-size: cover;
+}
+
+.links .link.github:hover:before {
+    position: absolute;
+    display: block;
+    right: 0;
+    width: 175px;
+    line-height: 16px;
+    content: 'View source on GitHub';
+    color: #000000;
+}
