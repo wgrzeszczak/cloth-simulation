@@ -1,6 +1,12 @@
 # cloth-simulation
 Simulation of a cloth using verlet integration and constraints.
 
+![Demo 1](https://wgrzeszczak.github.io/cloth/demo1.png)
+![Demo 2](https://wgrzeszczak.github.io/cloth/demo2.png)
+
+### Live demo
+Live demo: https://wgrzeszczak.github.io/cloth/
+
 ### License
 ```
 MIT License
