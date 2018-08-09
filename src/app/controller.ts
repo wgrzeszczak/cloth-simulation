@@ -21,6 +21,7 @@ export class Controller {
         this.view.addEventListener('mousemove', (event) => this.mouseMove(event));
         this.view.addEventListener('mouseup', (event) => this.mouseUp(event));
         this.view.addEventListener('mouseout', () => this.mouseOut());
+        this.view.addEventListener('keydown', (event) => this.keyDown(event));
         this.resize();   
     }
 
@@ -74,5 +75,12 @@ export class Controller {
     private mouseOut(): void {
         this.leftMouseButtonDown = false;
         this.leftMouseButtonDown = false;
+    }
+
+    private keyDown(event: KeyboardEvent): void {
+        switch(event.key) {
+            case 'g':
+            this.cloth.onToggleForces();
+        }
     }
 }

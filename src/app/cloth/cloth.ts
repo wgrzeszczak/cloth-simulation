@@ -10,6 +10,7 @@ export class Cloth implements IRenderable, IUpdatable {
     private readonly iterations: number;
     private clothPoints: Array<ClothPoint>;
     private clothLinks: Array<ClothLink>;
+    private drawForces: boolean;
 
     private selectedClothPoint: ClothPoint;
 
@@ -17,9 +18,10 @@ export class Cloth implements IRenderable, IUpdatable {
         this.clothWidth = clothWidth;
         this.clothHeight = clothHeight;
         this.iterations = iterations;
-
+        
         this.clothPoints = [];
         this.clothLinks = [];
+        this.drawForces = false;
 
         this.selectedClothPoint = null;
 
@@ -92,8 +94,7 @@ export class Cloth implements IRenderable, IUpdatable {
         this.clothPoints.forEach((clothPoint) => clothPoint.onRender(context, properties));
 
         context.beginPath();
-        context.strokeStyle = "#000000";
-        this.clothLinks.forEach((clothLink) => clothLink.onRender(context, properties));
+        this.clothLinks.forEach((clothLink) => clothLink.onRender(context, properties, this.drawForces));
         context.stroke();
     }
 
@@ -110,5 +111,9 @@ export class Cloth implements IRenderable, IUpdatable {
         });
 
         return selectedClothPoint;
+    }
+
+    onToggleForces(): void {
+        this.drawForces = !this.drawForces;
     }
 }
