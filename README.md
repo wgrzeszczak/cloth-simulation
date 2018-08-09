@@ -7,7 +7,7 @@ Simulation of a cloth using verlet integration and link constraints.
 ### Live demo
 Live demo: https://wgrzeszczak.github.io/cloth/
 
-Use the left mouse button to click and drag a selected cloth point, right click to pin or unpin a selected point and right click and drag to move the cloth around. Toggle cloth link tension by pressing G.
+Use the left mouse button to click and drag a selected cloth point, right click to pin or unpin a selected point and right click and drag to move the cloth around. Toggle visibility of tension forces acting on links by pressing G.
 
 ### License
 ```
