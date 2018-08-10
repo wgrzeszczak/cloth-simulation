@@ -7,7 +7,7 @@ export interface IRenderProperties {
 }
 
 export interface IRenderable {
-    onRender(context: CanvasRenderingContext2D, properties: IRenderProperties): void;
+    render(context: CanvasRenderingContext2D, properties: IRenderProperties): void;
 }
 
 export class Renderer {
@@ -34,7 +34,7 @@ export class Renderer {
         this.renderables.push(renderable);
     }
 
-    onRender() {
+    render() {
         const properties = {
             viewWidth: this.viewWidth,
             viewHeight: this.viewHeight,
@@ -43,18 +43,18 @@ export class Renderer {
 
         this.context.clearRect(0, 0, this.viewWidth, this.viewHeight);
         this.renderables.forEach((renderable) => {
-            renderable.onRender(this.context, properties);
+            renderable.render(this.context, properties);
         })
     }
 
-    onResize(viewWidth: number, viewHeight: number) {
+    resize(viewWidth: number, viewHeight: number) {
         this.viewWidth = viewWidth;
         this.viewHeight = viewHeight;
         this.canvas.width = this.viewWidth;
         this.canvas.height = this.viewHeight;
     }
 
-    onMove(movement: Vector2D): void {
+    move(movement: Vector2D): void {
         this.offset = this.offset.add(movement);
     }
 

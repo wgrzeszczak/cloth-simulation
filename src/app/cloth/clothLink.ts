@@ -9,8 +9,6 @@ export class ClothLink {
     private readonly restingDistance: number;
     private readonly tearDistance: number;
     private broken: boolean;
-    private readonly fromColor: string;
-    private readonly toColor: string;
 
     constructor(pointA: ClothPoint, pointB: ClothPoint) {
         this.pointA = pointA;
@@ -19,8 +17,6 @@ export class ClothLink {
         this.restingDistance = 20;
         this.tearDistance = 150;
         this.broken = false;
-        this.fromColor = "00FF00";
-        this.toColor = "FF0000";
     }
 
     onUpdate(): void {
@@ -44,44 +40,22 @@ export class ClothLink {
         }
     }
 
-    onRender(context: CanvasRenderingContext2D, properties: IRenderProperties, drawForces: boolean): void {
+    onRender(context: CanvasRenderingContext2D, properties: IRenderProperties): void {
         const from = this.pointA.getPosition().add(properties.offset);
         const to = this.pointB.getPosition().add(properties.offset);
 
-        const displacement = this.pointA.getPosition().subtract(this.pointB.getPosition());
-        const distance = displacement.length();
-        const ratio = Math.min(this.restingDistance / distance, 1);
-
-        context.beginPath();
-        if(drawForces) {
-            context.strokeStyle = `#${this.interpolateColor(ratio)}`;
-        }
-        else {
-            context.strokeStyle = '#000000';
-        }
         context.moveTo(from.x, from.y);
         context.lineTo(to.x, to.y);
-        context.stroke();
     }
 
     isBroken(): boolean {
         return this.broken;
     }
 
-    private interpolateColor(ratio: number): string {      
-        const red = Math.ceil(parseInt(this.fromColor.substring(0, 2), 16) * ratio + parseInt(this.toColor.substring(0, 2), 16) * (1 - ratio));
-        const green = Math.ceil(parseInt(this.fromColor.substring(2, 4), 16) * ratio + parseInt(this.toColor.substring(2, 4), 16) * (1 - ratio));
-        const blue = Math.ceil(parseInt(this.fromColor.substring(4, 6), 16) * ratio + parseInt(this.toColor.substring(4, 6), 16) * (1 - ratio));
-        
-        return this.toHex(red) + this.toHex(green) + this.toHex(blue);
+    getLinkRatio(): number {
+        const displacement = this.pointA.getPosition().subtract(this.pointB.getPosition());
+        const distance = displacement.length();
+        const ratio = Math.max(Math.min(this.restingDistance / distance, 1), 0);
+        return ratio;
     }
-
-    private toHex(value: number): string {
-        const result = value.toString(16);
-        if(result.length == 1) {
-            return `0${result}`;
-        }
-        return result;
-    };
-    
 }

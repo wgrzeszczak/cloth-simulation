@@ -8,14 +8,8 @@ export class App {
     private readonly physics: Physics;
     private readonly controller: Controller;
     private readonly cloth: Cloth;
-    
-    private lastUpdate: number;
-    private remainingElapsedTime: number;
 
-    constructor(view: Window, canvas: HTMLCanvasElement) {
-        this.lastUpdate = new Date().getTime();
-        this.remainingElapsedTime = 0;
-        
+    constructor(view: Window, canvas: HTMLCanvasElement) {       
         this.renderer = new Renderer(view, canvas);
         this.physics = new Physics;
         
@@ -23,32 +17,22 @@ export class App {
         this.renderer.addRenderable(this.cloth);
         this.physics.addUpdatable(this.cloth);
 
-        this.controller = new Controller(view, this.renderer, this.cloth);
+        this.controller = new Controller(view, this.physics, this.renderer, this.cloth);
     }
 
-    private update(timeStep: number): void {
-        this.physics.onUpdate(timeStep);
+    private update(): void {
+        this.physics.update();
     }
 
     private render(): void {
-        this.renderer.onRender();
+        this.renderer.render();
         requestAnimationFrame(() => this.render());
     }
 
     public run(): void {
-        const timeStep = 1.0 / 60.0;
-
         setInterval(() => {
-            const now = new Date().getTime();
-            let elapsedTime = (now - this.lastUpdate) / 1000.0 + this.remainingElapsedTime;
-            this.lastUpdate = now;
-
-            while(elapsedTime >= timeStep) {
-                this.update(timeStep);
-                elapsedTime -= timeStep;
-            }
-            this.remainingElapsedTime = elapsedTime;
-        }, timeStep * 1000);
+            this.update();
+        }, 1 / 60 * 1000);
 
         requestAnimationFrame(() => this.render());
     }

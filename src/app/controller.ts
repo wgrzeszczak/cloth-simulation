@@ -1,20 +1,24 @@
 import { Vector2D } from "./math/vector";
 import { Cloth } from "./cloth/cloth";
 import { Renderer } from "./renderer";
+import { Physics } from "./physics";
 
 export class Controller {
     private readonly view: Window;
+    private readonly physics: Physics;
     private readonly renderer: Renderer;
     private readonly cloth: Cloth;
 
     private leftMouseButtonDown: boolean;
     private rightMouseButtonDown: boolean;
 
-    constructor(view: Window, renderer: Renderer, cloth: Cloth) {
+    constructor(view: Window, physics: Physics, renderer: Renderer, cloth: Cloth) {
         this.view = view;
+        this.physics = physics;
         this.renderer = renderer;
         this.cloth = cloth;
 
+        this.view.addEventListener("focus", () => this.focus());
         this.view.addEventListener("resize", () => this.resize());
         this.view.addEventListener('contextmenu', (event) => event.preventDefault());
         this.view.addEventListener('mousedown', (event) => this.mouseDown(event));
@@ -25,8 +29,12 @@ export class Controller {
         this.resize();   
     }
 
+    private focus() {
+        this.physics.reset();
+    }
+
     private resize(): void {
-        this.renderer.onResize(this.view.innerWidth, this.view.innerHeight);
+        this.renderer.resize(this.view.innerWidth, this.view.innerHeight);
     }
 
     private mouseDown(event: MouseEvent): void {
@@ -36,11 +44,11 @@ export class Controller {
         switch(event.button) {
         case 0:
             this.leftMouseButtonDown = true;
-            this.cloth.onBeginMove(position);
+            this.cloth.beginMove(position);
             break;
         case 2:
             this.rightMouseButtonDown = true;
-            this.cloth.onPin(position);
+            this.cloth.pin(position);
             break;
         default:
         }
@@ -50,11 +58,11 @@ export class Controller {
         const movement = new Vector2D(event.movementX, event.movementY);
 
         if(this.leftMouseButtonDown) {
-            this.cloth.onMove(movement);
+            this.cloth.move(movement);
         }
 
         if(this.rightMouseButtonDown) {
-            this.renderer.onMove(movement);
+            this.renderer.move(movement);
         }
     }
 
@@ -63,7 +71,7 @@ export class Controller {
         switch(event.button) {
         case 0:
             this.leftMouseButtonDown = true;
-            this.cloth.onEndMove(position);
+            this.cloth.endMove(position);
             break;
         case 2:
             this.rightMouseButtonDown = false;
@@ -80,7 +88,7 @@ export class Controller {
     private keyDown(event: KeyboardEvent): void {
         switch(event.key) {
             case 'g':
-            this.cloth.onToggleForces();
+            this.cloth.toggleForces();
         }
     }
 }

@@ -32,20 +32,13 @@ export class ClothPoint {
             return;
         }
 
-        context.beginPath();
+        let radius = 3;
         if(!this.dynamic) {
-            context.fillStyle = "#FF0000";
-            context.strokeStyle = "#FF0000";
-            context.arc(this.position.x + properties.offset.x, this.position.y + properties.offset.y, 4, 0, 2 * Math.PI);
-            context.fill();
-            context.stroke();
+            radius = 4;
         }
-        else {
-            context.fillStyle = "#000000";
-            context.strokeStyle = "#000000";
-            context.arc(this.position.x + properties.offset.x, this.position.y + properties.offset.y, 3, 0, 2 * Math.PI);
-            context.stroke();
-        }
+
+        context.moveTo(this.position.x + properties.offset.x, this.position.y + properties.offset.y);
+        context.arc(this.position.x + properties.offset.x, this.position.y + properties.offset.y, radius, 0, 2 * Math.PI);
     }
 
     getPosition(): Vector2D {

@@ -13,6 +13,13 @@ export class Cloth implements IRenderable, IUpdatable {
     private drawForces: boolean;
 
     private selectedClothPoint: ClothPoint;
+    private readonly pointDynamicColor: string;
+    private readonly pointStaticColor: string;
+    private readonly linkFromColor: string;
+    private readonly linkToColor: string;
+    private readonly linkColorsLength: number;
+    private readonly linkColors: Array<string>;
+    private readonly maxPointMouseDistance: number;
 
     constructor(clothWidth: number, clothHeight: number, iterations: number) {
         this.clothWidth = clothWidth;
@@ -22,6 +29,19 @@ export class Cloth implements IRenderable, IUpdatable {
         this.clothPoints = [];
         this.clothLinks = [];
         this.drawForces = false;
+
+        this.pointDynamicColor = "#000000";
+        this.pointStaticColor = "#FF0000";
+        this.linkFromColor = "00FF00";
+        this.linkToColor = "FF0000";
+        this.linkColorsLength = 10;
+        this.linkColors = [];
+
+        this.maxPointMouseDistance = 15;
+
+        for(let color = 1; color <= this.linkColorsLength; color++) {
+            this.linkColors.push(`#${this.interpolateColor(color / this.linkColorsLength)}`);
+        }
 
         this.selectedClothPoint = null;
 
@@ -51,7 +71,7 @@ export class Cloth implements IRenderable, IUpdatable {
         }
     }
 
-    onUpdate(timeStep: number, properties: IPhysicsProperties): void {
+    update(timeStep: number, properties: IPhysicsProperties): void {
         for(let iteration = 0; iteration < this.iterations; iteration++) {
             this.clothLinks.forEach((clothLink) => clothLink.onUpdate());
         }
@@ -61,7 +81,7 @@ export class Cloth implements IRenderable, IUpdatable {
         this.clothPoints.forEach((clothPoint) => clothPoint.onUpdate(timeStep, properties));
     }
 
-    onBeginMove(position: Vector2D): void {
+    beginMove(position: Vector2D): void {
         this.selectedClothPoint = this.findClosestClothPoint(position);
 
         if(this.selectedClothPoint) {
@@ -69,20 +89,20 @@ export class Cloth implements IRenderable, IUpdatable {
         }
     }
 
-    onMove(movement: Vector2D): void {
+    move(movement: Vector2D): void {
         if(this.selectedClothPoint) {
             this.selectedClothPoint.setPosition(this.selectedClothPoint.getPosition().add(movement));
         }
     }
 
-    onEndMove(position: Vector2D): void {
+    endMove(position: Vector2D): void {
         if(this.selectedClothPoint) {
             this.selectedClothPoint.setSelected(false);
             this.selectedClothPoint = null;
         }
     }
 
-    onPin(position: Vector2D): void {
+    pin(position: Vector2D): void {
         const clothPoint = this.findClosestClothPoint(position);
 
         if(clothPoint) {
@@ -90,12 +110,61 @@ export class Cloth implements IRenderable, IUpdatable {
         }
     }
 
-    onRender(context: CanvasRenderingContext2D, properties: IRenderProperties): void {
-        this.clothPoints.forEach((clothPoint) => clothPoint.onRender(context, properties));
+    render(context: CanvasRenderingContext2D, properties: IRenderProperties): void {
+        this.renderStaticPoints(context, properties);
+        this.renderDynamicPoints(context, properties);
+        this.renderLinks(context, properties);
+    }
 
+    private renderStaticPoints(context: CanvasRenderingContext2D, properties: IRenderProperties): void {
         context.beginPath();
-        this.clothLinks.forEach((clothLink) => clothLink.onRender(context, properties, this.drawForces));
+        context.fillStyle = this.pointStaticColor;
+        context.strokeStyle = this.pointStaticColor;
+        this.clothPoints.forEach((clothPoint) => {
+            if(!clothPoint.getDynamic()) { 
+                clothPoint.onRender(context, properties); 
+            } 
+        });
         context.stroke();
+        context.fill();
+    }
+
+    private renderDynamicPoints(context: CanvasRenderingContext2D, properties: IRenderProperties): void {
+        context.beginPath();
+        context.fillStyle = this.pointDynamicColor;
+        context.strokeStyle = this.pointDynamicColor;
+        this.clothPoints.forEach((clothPoint) => {
+            if(clothPoint.getDynamic()) { 
+                clothPoint.onRender(context, properties); 
+            } 
+        });
+        context.stroke();
+    }
+
+    private renderLinks(context: CanvasRenderingContext2D, properties: IRenderProperties): void {
+        if(this.drawForces) {
+            for(let color = 1; color <= this.linkColors.length; color += 1) {
+                context.beginPath();
+                context.strokeStyle = this.linkColors[color];
+                const to = 1 / this.linkColors.length * color;
+                const from = to - 1 / this.linkColors.length;
+        
+                this.clothLinks.forEach((clothLink) => {
+                    const ratio = clothLink.getLinkRatio()
+                    if(ratio >= from && ratio <= to) {
+                        clothLink.onRender(context, properties);
+                    }
+                });
+                context.stroke();
+            }
+        }
+        else {
+            context.beginPath();
+            this.clothLinks.forEach((clothLink) => {
+                clothLink.onRender(context, properties);
+            });
+            context.stroke();
+        }
     }
 
     private findClosestClothPoint(position: Vector2D): ClothPoint {
@@ -104,7 +173,7 @@ export class Cloth implements IRenderable, IUpdatable {
 
         this.clothPoints.forEach((clothPoint) => {
             const currentDistance = clothPoint.getPosition().subtract(position).length();
-            if((distance == -1 || distance > currentDistance) && currentDistance < 10) {
+            if((distance == -1 || distance > currentDistance) && currentDistance < this.maxPointMouseDistance) {
                 distance = currentDistance;
                 selectedClothPoint = clothPoint;
             }
@@ -113,7 +182,23 @@ export class Cloth implements IRenderable, IUpdatable {
         return selectedClothPoint;
     }
 
-    onToggleForces(): void {
+    private interpolateColor(ratio: number): string {      
+        const red = Math.ceil(parseInt(this.linkFromColor.substring(0, 2), 16) * ratio + parseInt(this.linkToColor.substring(0, 2), 16) * (1 - ratio));
+        const green = Math.ceil(parseInt(this.linkFromColor.substring(2, 4), 16) * ratio + parseInt(this.linkToColor.substring(2, 4), 16) * (1 - ratio));
+        const blue = Math.ceil(parseInt(this.linkFromColor.substring(4, 6), 16) * ratio + parseInt(this.linkToColor.substring(4, 6), 16) * (1 - ratio));
+        
+        return this.toHex(red) + this.toHex(green) + this.toHex(blue);
+    }
+
+    private toHex(value: number): string {
+        const result = value.toString(16);
+        if(result.length == 1) {
+            return `0${result}`;
+        }
+        return result;
+    };
+
+    toggleForces(): void {
         this.drawForces = !this.drawForces;
     }
 }
