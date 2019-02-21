@@ -82,7 +82,7 @@ export class Controller {
 
     private mouseOut(): void {
         this.leftMouseButtonDown = false;
-        this.leftMouseButtonDown = false;
+        this.rightMouseButtonDown = false;
     }
 
     private keyDown(event: KeyboardEvent): void {
